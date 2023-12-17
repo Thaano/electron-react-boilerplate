@@ -1,6 +1,11 @@
 {
   "home": {
     "title": "Accueil",
-    "hello_world": "Bonjour le monde !"
+    "hello_world": "Bonjour le monde !",
+    "goToPage2": "Aller à la page 2"
+  },
+  "page2": {
+    "title": "Page 2",
+    "goToHome": "Retourner à l'accueil"
   }
 }
