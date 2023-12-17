@@ -20,6 +20,15 @@ package.json :
 - build.publish[0].url : link to the cloud directory where app versions are stored alongside with latest.yml file
 - build.publish[1].owner, repo : github informations
 
+## Environment variables
+
+Use .env file for dev mode, .env.prod is then used for the production build (package)
+
+Set :
+
+- `AUTO_UPDATE_FEED_URL` : url to your public folder where your app versions and latest.yml files are stored
+- Any other variable you may need
+
 ## Build :
 
 ### Configuration before building :
