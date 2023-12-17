@@ -9,27 +9,58 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import i18next from 'i18next';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
+require('./controllers/index');
+const Store = require('electron-store');
+
+const store = new Store();
+
 class AppUpdater {
   constructor() {
+    autoUpdater.setFeedURL({
+      provider: 'generic',
+      url: process.env.AUTO_UPDATE_FEED_URL,
+    });
+
     log.transports.file.level = 'info';
     autoUpdater.logger = log;
+
+    // autoUpdater.on('download-progress', (progressObj) => {
+    //   const percent = Math.floor(progressObj.percent);
+    //   mainWindow.webContents.send('update-download-progress', percent);
+    // });
+
+    autoUpdater.on('update-downloaded', () => {
+      dialog
+        .showMessageBox({
+          type: 'info',
+          title: 'Mises à Jour Téléchargées',
+          message:
+            "Une nouvelle version a été téléchargée. Voulez-vous redémarrer maintenant pour l'appliquer?",
+          buttons: ['Oui', 'Plus tard'],
+        })
+        .then((response) => {
+          if (response.response === 0) {
+            autoUpdater.quitAndInstall();
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    });
+
+    autoUpdater.checkForUpdates();
     autoUpdater.checkForUpdatesAndNotify();
   }
 }
 
 let mainWindow: BrowserWindow | null = null;
-
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate('pong'));
-});
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -72,13 +103,19 @@ const createWindow = async () => {
   mainWindow = new BrowserWindow({
     show: false,
     width: 1024,
+    minWidth: 1024,
     height: 728,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
+      nodeIntegration: true,
+      devTools: true,
     },
+    frame: false,
+    // titleBarStyle: 'hidden',
+    titleBarStyle: 'customButtonsOnHover',
   });
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
@@ -135,3 +172,64 @@ app
     });
   })
   .catch(console.log);
+
+ipcMain.on('close', () => {
+  app.quit();
+});
+
+ipcMain.on('minimize', () => {
+  mainWindow?.minimize();
+});
+
+ipcMain.on('maximize', () => {
+  // eslint-disable-next-line no-unused-expressions
+  mainWindow?.isMaximized() ? mainWindow.unmaximize() : mainWindow?.maximize();
+});
+
+ipcMain.on('getAppVersion', (event) => {
+  event.reply('getAppVersion-reply', app.getVersion());
+});
+
+app.on('ready', () => {
+  const userLocale = store.get('language')
+    ? store.get('language')
+    : app.getLocale().substring(0, 2);
+
+  ipcMain.on('getLocale', (event) => {
+    event.returnValue = userLocale;
+  });
+
+  const locales = ['en', 'fr'];
+
+  const resources = locales.reduce<{ [key: string]: { translation: any } }>(
+    (acc, locale) => {
+      acc[locale] = {
+        // eslint-disable-next-line import/no-dynamic-require
+        translation: require(`../dictionaries/${locale}.json`),
+      };
+      return acc;
+    },
+    {},
+  );
+
+  i18next.init(
+    {
+      resources,
+      lng: userLocale,
+      // ... vos options
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    (err, t) => {
+      if (err) return console.log('something went wrong loading', err);
+      // t('home.hello_world'); // -> devrait retourner la traduction
+      // console.log('i18next is ready');
+      // console.log(t('home.hello_world'));
+      return null;
+    },
+  );
+});
+
+ipcMain.on('changeLanguage', (event, lg) => {
+  i18next.changeLanguage(lg);
+  store.set('language', lg);
+});

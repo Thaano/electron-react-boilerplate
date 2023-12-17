@@ -1,3 +1,61 @@
+# Electron React Boilerplate Quick Starter
+
+Quick starter for Electron React Boilerplate featuring
+
+- dotenv : use .env file for dev, .env.prod for production
+- Internationalization (i18next + react-i18next) and folder structure
+- CSS : styled-components & tailwindcss (postcss postcss-loader autoprefixer) & rippleui
+- IPC communication ready (bidirectional & unidirectional) with controllers and models
+- Configuration for dev and prod webpack with tailwind
+- Eslint and Prettier custom configuration
+
+## Start :
+
+Configuration before starting :
+
+package.json :
+
+- build.productName : product name
+- build.appId : app Id (ex : com.domain.appName)
+- build.publish[0].url : link to the cloud directory where app versions are stored alongside with latest.yml file
+- build.publish[1].owner, repo : github informations
+
+## Build :
+
+### Configuration before building :
+
+/release/app/package.json :
+
+- name : name of the app
+- version : version of the current build (to increment each time you build a new major or minor version of the app)
+- description : description of the app
+- author : author informations
+
+### Building
+
+Build the app (installer):
+
+```bash
+npm run package
+```
+
+Output folder is /release/app/build
+
+---
+
+Publish the build to your providers (github as configured by default):
+
+```bash
+npm run publish
+```
+
+---
+
+<br>
+<br>
+
+# Electron React Boilerplate README.md
+
 <img src=".erb/img/erb-banner.svg" width="100%" />
 
 <br>

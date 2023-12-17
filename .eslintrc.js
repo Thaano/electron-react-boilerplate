@@ -11,12 +11,35 @@ module.exports = {
     'import/no-import-module-exports': 'off',
     'no-shadow': 'off',
     '@typescript-eslint/no-shadow': 'error',
-    'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': 'error',
+    'no-unused-vars': 'warn',
+    '@typescript-eslint/no-unused-vars': 'warn',
+    'prettier/prettier': 0,
+    'react/function-component-definition': [
+      2,
+      {
+        namedComponents: 'arrow-function',
+        unnamedComponents: 'arrow-function',
+      },
+    ],
+    'react/self-closing-comp': [
+      'error',
+      {
+        component: false,
+        html: false,
+      },
+    ],
+    'react/prop-types': 'off',
+    'no-constructor-return': 'off',
+    'global-require': 'warn',
+    'import/no-dynamic-require': 'warn',
+    'import/prefer-default-export': 'off',
   },
   parserOptions: {
-    ecmaVersion: 2022,
+    ecmaVersion: 2020,
     sourceType: 'module',
+    project: './tsconfig.json',
+    tsconfigRootDir: __dirname,
+    createDefaultProgram: true,
   },
   settings: {
     'import/resolver': {
